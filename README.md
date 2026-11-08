@@ -26,19 +26,19 @@ For the rest of the session, each permission prompt is answered "Yes, and don't 
 
 ## The problem
 
-Claude Code asks before it edits a file, runs a shell command, or fetches a URL. On a long task those prompts are where the work stops: you come back after lunch to find Claude waiting on a dialog you would have approved in a second. Most of the time you pick the same answer anyway: "Yes, and don't ask again".
+In Manual mode, Claude Code asks before it edits a file, runs a shell command, or fetches a URL. On a long task those prompts are where the work stops: you come back after lunch to find Claude waiting on a dialog you would have approved in a second. By [Anthropic's own count](https://www.anthropic.com/engineering/claude-code-auto-mode), people approve 93% of these prompts. Most of the time you pick the same answer anyway: "Yes, and don't ask again".
 
 The built-in ways around the prompt each give something up:
 
 | Option | At a prompt | Saved for next time |
 | --- | --- | --- |
-| Default mode | Asks you, and waits | What you choose to save |
-| `acceptEdits` mode | Accepts file edits; everything else still asks | Nothing |
+| Manual mode (`default`) | Asks you, and waits | What you choose to save |
+| `acceptEdits` mode | Accepts file edits and common file commands such as `mkdir` and `mv`; everything else still asks | Nothing |
 | `auto` mode | A model classifier approves or denies | Nothing |
-| `bypassPermissions` (`--dangerously-skip-permissions`) | Skips every permission check | Nothing |
+| `bypassPermissions` (`--dangerously-skip-permissions`) | Skips almost every prompt and safety check; deny rules still apply | Nothing |
 | **ydaa** | Picks "Yes, and don't ask again", else "Yes" | What the prompt offered to save |
 
-ydaa sits between being asked and not being checked at all. It clicks the button you would have clicked, so the rules that build up are the ones Claude Code itself offered: plain permission rules in your settings that you can read and remove. Your deny rules keep working, it never changes your permission mode, and the dialogs that need a person keep waiting for one.
+ydaa sits between being asked every time and not being asked at all. It clicks the button you would have clicked, so the rules that build up are the ones Claude Code itself offered: plain permission rules in your settings that you can read and remove. Your deny rules keep working, it never changes your permission mode, and the dialogs that need a person keep waiting for one.
 
 ## Install
 
