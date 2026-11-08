@@ -64,6 +64,28 @@ test('on, in auto mode: its prompts stay with the person', async ($, on) => {
   expect(manual.decision).toEqual({ behavior: 'allow', updatedPermissions: [RULE] })
 })
 
+test('the status line follows the mode the session reports', async ($, on) => {
+  let status: string | undefined
+  mock.store(on)
+  on('ui.status', (_, e) => {
+    status = e.text
+    return { value: undefined }
+  })
+  on('classic.UserPromptSubmit', () => ({}))
+  on('classic.PermissionRequest', () => ({}))
+  // Before the first prompt nothing has told ydaa the mode.
+  await ydaa($, 'on')
+  expect(status).toBe('on, except in auto mode')
+  await $.classic.UserPromptSubmit({ prompt: 'go on', permission_mode: 'auto' })
+  expect(status).toBe('paused in auto mode (Shift+Tab for Manual)')
+  await $.classic.UserPromptSubmit({ prompt: 'go on', permission_mode: 'default' })
+  expect(status).toBe('auto-answering permission prompts')
+  await $.classic.PermissionRequest({ ...bash([]), permission_mode: 'auto' })
+  expect(status).toBe('paused in auto mode (Shift+Tab for Manual)')
+  await ydaa($, 'off')
+  expect(status).toBeUndefined()
+})
+
 test('/ydaa on and /ydaa off flip the switch', async ($, on) => {
   mock.store(on)
   on('classic.PermissionRequest', () => ({}))
@@ -83,12 +105,17 @@ for (const reason of ['clear', 'resume'] as const) {
       status = e.text
       return { value: undefined }
     })
+    on('classic.UserPromptSubmit', () => ({}))
     on('session.end', (_, e) => ({ sessionId: e.sessionId }))
     await ydaa($, 'on')
+    await $.classic.UserPromptSubmit({ prompt: 'go on', permission_mode: 'default' })
     expect(status).toBe('auto-answering permission prompts')
     await $.session.end({ reason, sessionId: 'a', resume: { id: 'a' } })
     expect(status).toBeUndefined()
     expect((await $.classic.PermissionRequest(bash([]))).decision).toBeUndefined()
+    // The next session's mode is unknown until its first prompt.
+    await ydaa($, 'on')
+    expect(status).toBe('on, except in auto mode')
   })
 }
 

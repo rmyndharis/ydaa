@@ -73,7 +73,7 @@ ydaa installs switched off. Nothing changes until you run `/ydaa on`.
 | `/ydaa` | Show whether ydaa is on |
 | `/ydaa stats` | Show how many prompts ydaa has answered, and the time that saved you |
 
-While ydaa is on, the status line under the prompt reads `auto-answering permission prompts`.
+While ydaa is on, the status line under the prompt reads `ydaa: auto-answering permission prompts`, or `ydaa: paused in auto mode (Shift+Tab for Manual)` in auto mode. ydaa reads the mode from each prompt you send and each permission prompt, so the line reads `ydaa: on, except in auto mode` until your first prompt, and catches up at your next prompt after you switch modes.
 
 `/ydaa off` takes effect at once, even while Claude is in the middle of a turn, so you can take the prompts back without waiting for the turn to finish.
 
@@ -100,7 +100,7 @@ ydaa hooks the moment Claude Code is about to show a permission dialog (the `Per
 
 Hooks from your organization's managed settings run before ydaa and can still refuse a call. `PermissionRequest` hooks in your own settings, such as one that sends a notification when Claude is waiting, do not run for a prompt ydaa has answered, since nobody is waiting.
 
-The whole plugin is under 100 lines in [`hooks/register.ts`](hooks/register.ts). It is kept short so you can read all of it before you turn it on.
+The whole plugin is under 120 lines in [`hooks/register.ts`](hooks/register.ts). It is kept short so you can read all of it before you turn it on.
 
 ## Before you turn it on
 

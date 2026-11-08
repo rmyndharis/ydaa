@@ -33,10 +33,28 @@ async function stats($: EngineInterface): Promise<string> {
   )
 }
 
+// The host shows the line as "ydaa: <text>".
+function showStatus($: EngineInterface, isOn: boolean, mode: string | undefined): void {
+  if (!isOn) return $.ui.status(undefined)
+  if (mode === undefined) return $.ui.status('on, except in auto mode')
+  $.ui.status(mode === 'auto' ? 'paused in auto mode (Shift+Tab for Manual)' : 'auto-answering permission prompts')
+}
+
+// Switching modes raises no event of its own, so the status line follows the
+// mode each event reports. Returns the mode to keep.
+function follow($: EngineInterface, isOn: boolean, mode: string | undefined, reported: string | undefined) {
+  if (reported === undefined || reported === mode) return mode
+  showStatus($, isOn, reported)
+  return reported
+}
+
 export const register: Register = on => {
   // Per session: a new session, another terminal, or this one after a reload
   // keeps asking until /ydaa on is typed there.
   let isOn = false
+  // As the last prompt or permission request reported it. A plugin is not
+  // told the mode a session starts in, so it is unknown until then.
+  let mode: string | undefined
 
   on('session.start', async ($, e, next) => {
     await $.command.register({
@@ -54,7 +72,13 @@ export const register: Register = on => {
   // session would inherit the switch. Compaction does not end a session.
   on('session.end', ($, e, next) => {
     isOn = false
+    mode = undefined
     $.ui.status(undefined)
+    return next(e)
+  })
+
+  on('classic.UserPromptSubmit', ($, e, next) => {
+    mode = follow($, isOn, mode, e.permission_mode)
     return next(e)
   })
 
@@ -63,7 +87,7 @@ export const register: Register = on => {
     if (arg === 'stats') return { text: await stats($) }
     if (arg === 'on' || arg === 'off') {
       isOn = arg === 'on'
-      $.ui.status(isOn ? 'auto-answering permission prompts' : undefined)
+      showStatus($, isOn, mode)
     } else if (arg !== '') return { text: 'Usage: /ydaa on|off|stats' }
     return {
       text: isOn
@@ -75,6 +99,7 @@ export const register: Register = on => {
   // Answers without next(e): nobody is asked, so settings hooks that report a
   // pending prompt are not run for it. Managed hooks still run above this one.
   on('classic.PermissionRequest', async ($, e, next) => {
+    mode = follow($, isOn, mode, e.permission_mode)
     // Auto mode prompts only for what it means you to decide, such as a call
     // its classifier kept blocking.
     if (!isOn || e.permission_mode === 'auto' || PERSON_ONLY.has(e.tool_name)) return next(e)
