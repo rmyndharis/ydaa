@@ -50,6 +50,14 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // /clear and /resume end the session but keep this copy loaded, so the next
+  // session would inherit the switch. Compaction does not end a session.
+  on('session.end', ($, e, next) => {
+    isOn = false
+    $.ui.status(undefined)
+    return next(e)
+  })
+
   on('command.run', { command: 'ydaa' }, async ($, e) => {
     const arg = e.args.trim().toLowerCase()
     if (arg === 'stats') return { text: await stats($) }

@@ -63,6 +63,25 @@ test('/ydaa on and /ydaa off flip the switch', async ($, on) => {
   expect((await $.classic.PermissionRequest(bash([]))).decision).toBeUndefined()
 })
 
+// /clear and /resume start another session in the same process: no reload.
+for (const reason of ['clear', 'resume'] as const) {
+  test(`a session ended by ${reason} takes ydaa and its status line with it`, async ($, on) => {
+    let status: string | undefined
+    mock.store(on)
+    on('classic.PermissionRequest', () => ({}))
+    on('ui.status', (_, e) => {
+      status = e.text
+      return { value: undefined }
+    })
+    on('session.end', (_, e) => ({ sessionId: e.sessionId }))
+    await ydaa($, 'on')
+    expect(status).toBe('auto-answering permission prompts')
+    await $.session.end({ reason, sessionId: 'a', resume: { id: 'a' } })
+    expect(status).toBeUndefined()
+    expect((await $.classic.PermissionRequest(bash([]))).decision).toBeUndefined()
+  })
+}
+
 test('a mistyped /ydaa shows usage and leaves the switch off', async ($, on) => {
   mock.store(on)
   on('classic.PermissionRequest', () => ({}))
