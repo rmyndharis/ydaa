@@ -54,6 +54,16 @@ test('on: questions and plan approval stay with the person', async ($, on) => {
   }
 })
 
+test('on, in auto mode: its prompts stay with the person', async ($, on) => {
+  mock.store(on)
+  on('classic.PermissionRequest', () => ({}))
+  await ydaa($, 'on')
+  const ask: Ask = { ...bash([RULE]), permission_mode: 'auto' }
+  expect((await $.classic.PermissionRequest(ask)).decision).toBeUndefined()
+  const manual = await $.classic.PermissionRequest({ ...ask, permission_mode: 'default' })
+  expect(manual.decision).toEqual({ behavior: 'allow', updatedPermissions: [RULE] })
+})
+
 test('/ydaa on and /ydaa off flip the switch', async ($, on) => {
   mock.store(on)
   on('classic.PermissionRequest', () => ({}))

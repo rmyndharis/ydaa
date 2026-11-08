@@ -24,6 +24,8 @@
 
 For the rest of the session, each permission prompt is answered "Yes, and don't ask again" when the prompt offers that option, and "Yes" when it does not. Questions Claude asks you and plan approval still wait for you. `/ydaa off` hands the prompts back, and `/ydaa stats` shows what ydaa has saved you so far.
 
+ydaa answers in Manual mode and leaves auto mode's prompts to you. Claude Code 2.1.283 and later start terminal and VS Code sessions in auto mode, so press `Shift+Tab` once to switch to Manual (the status bar reads `manual mode on`).
+
 ## The problem
 
 In Manual mode, Claude Code asks before it edits a file, runs a shell command, or fetches a URL. On a long task those prompts are where the work stops: you come back after lunch to find Claude waiting on a dialog you would have approved in a second. By [Anthropic's own count](https://www.anthropic.com/engineering/claude-code-auto-mode), people approve 93% of these prompts. Most of the time you pick the same answer anyway: "Yes, and don't ask again".
@@ -89,7 +91,7 @@ The count is kept across sessions. Time is estimated at 2 seconds a prompt, abou
 
 ydaa hooks the moment Claude Code is about to show a permission dialog (the `PermissionRequest` event). Your allow and deny rules have already been applied by then, so ydaa only ever sees calls that were going to ask you.
 
-1. **Off:** the dialog shows as usual.
+1. **Off, or in auto mode:** the dialog shows as usual.
 2. **On:** ydaa answers in place of the dialog, and counts the answer for `/ydaa stats`.
    - When the dialog offers "Yes, and don't ask again" (a rule for this command or tool, or access to a folder), ydaa picks it. The grant is saved exactly where that option would save it, often the project's `.claude/settings.local.json`, so the same call does not prompt again.
    - When it offers no such option, ydaa answers a plain "Yes" for this one call.
@@ -114,6 +116,7 @@ The whole plugin is under 100 lines in [`hooks/register.ts`](hooks/register.ts).
   ```
 
   Deny rules match a call as it is written, so `Bash(git push:*)` does not catch every way to push. Treat them as a seatbelt, not a sandbox.
+- **It stays out of auto mode.** Auto mode replaces most prompts with a classifier, and the prompts it still shows are meant for you, such as the one after the classifier blocks 3 times in a row or 20 times in a session. ydaa leaves them alone. To have ydaa answer prompts, switch to Manual with `Shift+Tab`, or set `"defaultMode": "default"` under `permissions` in `~/.claude/settings.json` to start every session there.
 - **The switch covers one session.** `/ydaa on` holds until you run `/ydaa off`, start over with `/clear`, switch with `/resume`, or close the session. Whatever comes next (a new conversation in the same terminal, another terminal, or a reload of the plugin after an update) starts with ydaa off, and ydaa answers nothing there until you type `/ydaa on` in it. Compacting a long conversation does not end the session, so ydaa stays on through it.
 - **Rules ydaa saved are shared, and they stay.** They are ordinary permission rules, in the same settings files as the ones you save by hand, so they hold after `/ydaa off` and in every other session that reads those settings: a rule saved for `npm test` in one terminal means no prompt for `npm test` in another terminal on the same project. Review and remove them with `/permissions`, or edit the settings file.
 - **Ask rules and confirmation prompts from hooks are answered too.** A call that matches an `ask` rule in your settings, or that a plugin or settings hook asks you to confirm (for example a `PreToolUse` hook that returns `ask`), raises the same dialog, and ydaa answers it like any other. If a rule or hook exists to make you look at something, make it deny instead, or keep ydaa off.

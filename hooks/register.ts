@@ -67,7 +67,7 @@ export const register: Register = on => {
     } else if (arg !== '') return { text: 'Usage: /ydaa on|off|stats' }
     return {
       text: isOn
-        ? `ydaa is on for this session: permission prompts get "Yes, and don't ask again" when offered, otherwise "Yes". /ydaa off hands them back.`
+        ? `ydaa is on for this session: permission prompts get "Yes, and don't ask again" when offered, otherwise "Yes", except in auto mode (Shift+Tab switches to Manual). /ydaa off hands them back.`
         : 'ydaa is off: permission prompts come to you. Rules saved while it was on stay; review them with /permissions.',
     }
   })
@@ -75,7 +75,9 @@ export const register: Register = on => {
   // Answers without next(e): nobody is asked, so settings hooks that report a
   // pending prompt are not run for it. Managed hooks still run above this one.
   on('classic.PermissionRequest', async ($, e, next) => {
-    if (!isOn || PERSON_ONLY.has(e.tool_name)) return next(e)
+    // Auto mode prompts only for what it means you to decide, such as a call
+    // its classifier kept blocking.
+    if (!isOn || e.permission_mode === 'auto' || PERSON_ONLY.has(e.tool_name)) return next(e)
     // "Yes, and don't ask again for ..." is the prompt's own rule and folder
     // grants; a mode switch ("switch to auto mode", "allow all edits") is not.
     const grants = (e.permission_suggestions ?? []).filter(
