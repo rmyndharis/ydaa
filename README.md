@@ -98,7 +98,7 @@ ydaa hooks the moment Claude Code is about to show a permission dialog (the `Per
 
 Hooks from your organization's managed settings run before ydaa and can still refuse a call. `PermissionRequest` hooks in your own settings, such as one that sends a notification when Claude is waiting, do not run for a prompt ydaa has answered, since nobody is waiting.
 
-The whole plugin is about 50 lines in [`hooks/register.ts`](hooks/register.ts). It is kept short so you can read all of it before you turn it on.
+The whole plugin is under 100 lines in [`hooks/register.ts`](hooks/register.ts). It is kept short so you can read all of it before you turn it on.
 
 ## Before you turn it on
 

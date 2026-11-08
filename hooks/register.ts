@@ -7,8 +7,8 @@ const PERSON_ONLY = new Set(['AskUserQuestion', 'ExitPlanMode'])
 // Roughly what a person spends reading one prompt and picking an answer.
 const SECONDS_PER_PROMPT = 2
 
-// The store has no atomic increment, so two sessions answering at the same
-// moment can lose a count. Fine for an estimate.
+// The store has no atomic increment, so two answers at the same moment
+// (parallel subagents, or two sessions) can lose a count. Fine for an estimate.
 async function countAnswer($: EngineInterface): Promise<void> {
   await $.store.set('answered', (Number(await $.store.get('answered')) || 0) + 1)
 }
