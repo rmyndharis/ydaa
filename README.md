@@ -159,9 +159,9 @@ claude plugin test .
 
 ## Contributing
 
-Issues and pull requests are welcome. Keep changes small, add a test for any change in what ydaa answers, and run `claude plugin validate .` and `claude plugin test .` before you open a pull request.
+Issues and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers how to report a problem, the commit and pull request conventions, and how a release is cut. What changed in each version is in [CHANGELOG.md](CHANGELOG.md).
 
-A change that lets ydaa answer more than it does today (a new kind of grant, a mode switch, a dialog meant for a person) should explain in the pull request why it is safe.
+Report a security problem privately, as [SECURITY.md](SECURITY.md) describes.
 
 ## Support
 
