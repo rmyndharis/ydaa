@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest a change to what ydaa does
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What you were doing, and where ydaa got in the way or fell short.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What ydaa should do instead. If it would answer more prompts than it does today, say why that is safe.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Other ways to get there that you considered, such as an allow rule, a deny rule or another permission mode.

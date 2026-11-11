@@ -1,0 +1,67 @@
+name: Bug report
+description: ydaa answered a prompt it should have left to you, left one it should have answered, or showed the wrong thing
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If ydaa approved something the README says is left to you, report it privately instead: see the [security policy](https://github.com/rmyndharis/ydaa/security/policy).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What ydaa did, and what you expected instead. Paste the status line or the output of `/ydaa` if it helps.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The shortest sequence that shows the problem, starting from `/ydaa on`.
+      placeholder: |
+        1. /ydaa on
+        2. Ask Claude to ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: ydaa-version
+    attributes:
+      label: ydaa version
+      description: The version `claude plugin list` shows for ydaa.
+      placeholder: 0.3.0
+    validations:
+      required: true
+  - type: input
+    id: claude-code-version
+    attributes:
+      label: Claude Code version
+      description: The output of `claude --version`.
+      placeholder: 2.1.322
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where you run Claude Code
+      options:
+        - Terminal
+        - VS Code
+        - Desktop app
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Permission mode when it happened
+      options:
+        - Manual (default)
+        - acceptEdits
+        - auto
+        - plan
+        - bypassPermissions
+        - dontAsk
+        - Not sure
+    validations:
+      required: true

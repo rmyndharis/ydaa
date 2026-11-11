@@ -1,0 +1,7 @@
+contact_links:
+  - name: Report a security problem
+    url: https://github.com/rmyndharis/ydaa/security/advisories/new
+    about: Report it privately if ydaa approved something the README says is left to you.
+  - name: A problem in Claude Code itself
+    url: https://github.com/anthropics/claude-code/issues
+    about: Permission prompts, modes or plugins that misbehave with ydaa off belong to Claude Code.
