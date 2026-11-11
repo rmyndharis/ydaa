@@ -67,6 +67,32 @@ test('on: pauses in auto, plan, dontAsk, and bypassPermissions; answers in Manua
   }
 })
 
+test('subagent prompts keep the parent status line and follow live permission_mode', async ($, on) => {
+  let status: string | undefined
+  mock.store(on)
+  on('ui.status', (_, e) => {
+    status = e.text
+    return { value: undefined }
+  })
+  on('classic.UserPromptSubmit', () => ({}))
+  on('classic.PermissionRequest', () => ({}))
+  await ydaa($, 'on')
+  await $.classic.UserPromptSubmit({ prompt: 'go on', permission_mode: 'default' })
+  expect(status).toBe('auto-answering permission prompts')
+  // A subagent running in auto mode pauses for its own escalations without flipping the session line.
+  const autoSub = await $.classic.PermissionRequest({ ...bash([RULE]), agent_id: 'sub-1', permission_mode: 'auto' })
+  expect(autoSub.decision).toBeUndefined()
+  expect(status).toBe('auto-answering permission prompts')
+  await $.classic.UserPromptSubmit({ prompt: 'plan first', permission_mode: 'plan' })
+  expect(status).toBe('paused in plan mode')
+  const planSub = await $.classic.PermissionRequest({ ...bash([RULE]), agent_id: 'sub-2', permission_mode: 'plan' })
+  expect(planSub.decision).toBeUndefined()
+  // Once the plan is approved a subagent reports the live mode (`bubble` for a fork under Manual),
+  // while the mode the session last reported is still plan.
+  const postExitSub = await $.classic.PermissionRequest({ ...bash([RULE]), agent_id: 'sub-3', permission_mode: 'bubble' })
+  expect(postExitSub.decision).toEqual({ behavior: 'allow', updatedPermissions: [RULE] })
+})
+
 test('the status line follows the mode the session reports', async ($, on) => {
   let status: string | undefined
   mock.store(on)

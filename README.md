@@ -73,7 +73,7 @@ ydaa installs switched off. Nothing changes until you run `/ydaa on`.
 | `/ydaa` | Show whether ydaa is on |
 | `/ydaa stats` | Show how many prompts ydaa has answered, and the time that saved you |
 
-While ydaa is on, the status line under the prompt reads `ydaa: auto-answering permission prompts`, or `ydaa: paused in auto mode (Shift+Tab for Manual)` in auto mode (and `ydaa: paused in plan mode` in plan mode). ydaa reads the mode from each prompt you send and each permission prompt, so the line reads `ydaa: on, except in auto or plan mode` until your first prompt, and catches up at your next prompt after you switch modes.
+While ydaa is on, the status line under the prompt reads `ydaa: auto-answering permission prompts`, or `ydaa: paused in auto mode (Shift+Tab for Manual)` in auto mode (and `ydaa: paused in plan mode` in plan mode). ydaa reads the mode from each prompt you send and each permission prompt in the main conversation, so the line reads `ydaa: on, except in auto or plan mode` until your first prompt, and catches up at your next prompt after you switch modes or approve a plan. What ydaa answers follows the mode each permission prompt reports, so a line that lags never changes an answer.
 
 `/ydaa off` takes effect at once, even while Claude is in the middle of a turn, so you can take the prompts back without waiting for the turn to finish.
 

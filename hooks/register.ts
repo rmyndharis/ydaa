@@ -97,7 +97,7 @@ export const register: Register = on => {
   // Answers without next(e): nobody is asked, so settings hooks that report a
   // pending prompt are not run for it. Managed hooks still run above this one.
   on('classic.PermissionRequest', async ($, e, next) => {
-    mode = follow($, isOn, mode, e.permission_mode)
+    if (!e.agent_id) mode = follow($, isOn, mode, e.permission_mode)
     if (!isOn || PAUSED.has(e.permission_mode ?? mode ?? '') || PERSON_ONLY.has(e.tool_name)) return next(e)
     // "Yes, and don't ask again for ..." is the prompt's own rule and folder
     // grants; a mode switch ("switch to auto mode", "allow all edits") is not.
