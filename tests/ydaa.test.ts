@@ -138,6 +138,18 @@ test('/ydaa stats counts only the prompts ydaa answered', async ($, on) => {
   expect(await ydaa($, 'stats')).toContain('ydaa has answered 1 permission prompt for you.')
 })
 
+test('/ydaa stats does not lose counts when parallel calls prompt at once', async ($, on) => {
+  mock.store(on)
+  await ydaa($, 'on')
+  await Promise.all([
+    $.classic.PermissionRequest(bash([])),
+    $.classic.PermissionRequest(bash([])),
+    $.classic.PermissionRequest(bash([])),
+    $.classic.PermissionRequest(bash([])),
+  ])
+  expect(await ydaa($, 'stats')).toContain('ydaa has answered 4 permission prompts for you.')
+})
+
 test('/ydaa stats, word for word as the README shows it', async ($, on) => {
   mock.store(on, { answered: 1284 })
   expect(await ydaa($, 'stats')).toBe(

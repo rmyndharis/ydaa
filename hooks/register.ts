@@ -7,12 +7,6 @@ const PERSON_ONLY = new Set(['AskUserQuestion', 'ExitPlanMode'])
 // Roughly what a person spends reading one prompt and picking an answer.
 const SECONDS_PER_PROMPT = 2
 
-// The store has no atomic increment, so two answers at the same moment
-// (parallel subagents, or two sessions) can lose a count. Fine for an estimate.
-async function countAnswer($: EngineInterface): Promise<void> {
-  await $.store.set('answered', (Number(await $.store.get('answered')) || 0) + 1)
-}
-
 // 58 reads "58 s", 2568 reads "43 min", 4000 reads "1 h 7 min".
 function duration(seconds: number): string {
   if (seconds < 60) return `${seconds} s`
@@ -55,6 +49,7 @@ export const register: Register = on => {
   // As the last prompt or permission request reported it. A plugin is not
   // told the mode a session starts in, so it is unknown until then.
   let mode: string | undefined
+  let counting = Promise.resolve()
 
   on('session.start', async ($, e, next) => {
     await $.command.register({
@@ -108,8 +103,13 @@ export const register: Register = on => {
     const grants = (e.permission_suggestions ?? []).filter(
       s => s.type === 'addDirectories' || (s.type === 'addRules' && s.behavior === 'allow'),
     )
-    // A count that fails to save must not leave the prompt unanswered.
-    await countAnswer($).catch(() => {})
+    // Serialized in this process; two sessions at once can still lose a count,
+    // and a count that fails to save must not leave the prompt unanswered.
+    await (counting = counting
+      .then(async () => {
+        await $.store.set('answered', (Number(await $.store.get('answered')) || 0) + 1)
+      })
+      .catch(() => {}))
     return {
       decision:
         grants.length > 0 ? { behavior: 'allow', updatedPermissions: grants } : { behavior: 'allow' },
