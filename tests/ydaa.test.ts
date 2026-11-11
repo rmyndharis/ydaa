@@ -150,6 +150,38 @@ test('/ydaa stats does not lose counts when parallel calls prompt at once', asyn
   expect(await ydaa($, 'stats')).toContain('ydaa has answered 4 permission prompts for you.')
 })
 
+test('/ydaa off stops in-flight and queued prompts before they answer', async ($, on) => {
+  let answered = 0
+  let markFirstRead!: () => void
+  let releaseFirstRead!: () => void
+  const firstReadEntered = new Promise<void>(r => (markFirstRead = r))
+  const firstReadGate = new Promise<void>(r => (releaseFirstRead = r))
+  let reads = 0
+  on('ui.status', () => ({ value: undefined }))
+  on('store.get', async () => {
+    if (++reads === 1) {
+      markFirstRead()
+      await firstReadGate
+    }
+    return { value: answered }
+  })
+  on('store.set', (_, e) => {
+    answered = Number(e.value)
+    return { value: undefined }
+  })
+  on('classic.PermissionRequest', () => ({}))
+  await ydaa($, 'on')
+  const first = $.classic.PermissionRequest(bash([]))
+  const second = $.classic.PermissionRequest(bash([]))
+  await firstReadEntered
+  await ydaa($, 'off')
+  releaseFirstRead()
+  expect((await first).decision).toBeUndefined()
+  expect((await second).decision).toBeUndefined()
+  expect(answered).toBe(0)
+  expect(reads).toBe(1)
+})
+
 test('/ydaa stats, word for word as the README shows it', async ($, on) => {
   mock.store(on, { answered: 1284 })
   expect(await ydaa($, 'stats')).toBe(

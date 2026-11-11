@@ -107,12 +107,12 @@ export const register: Register = on => {
     // and a count that fails to save must not leave the prompt unanswered.
     await (counting = counting
       .then(async () => {
-        await $.store.set('answered', (Number(await $.store.get('answered')) || 0) + 1)
+        if (!isOn) return
+        const n = (Number(await $.store.get('answered')) || 0) + 1
+        if (isOn) await $.store.set('answered', n)
       })
       .catch(() => {}))
-    return {
-      decision:
-        grants.length > 0 ? { behavior: 'allow', updatedPermissions: grants } : { behavior: 'allow' },
-    }
+    if (!isOn) return next(e)
+    return { decision: grants.length > 0 ? { behavior: 'allow', updatedPermissions: grants } : { behavior: 'allow' } }
   })
 }
