@@ -1,6 +1,6 @@
 {
   "name": "ydaa",
-  "owner": { "name": "yudhi" },
+  "owner": { "name": "Yudhi Armyndharis" },
   "description": "Yes, and don't ask again: a Claude Code plugin that answers permission prompts for you",
   "plugins": [{ "name": "ydaa", "source": "./" }]
 }
