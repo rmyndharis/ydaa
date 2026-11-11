@@ -1,6 +1,6 @@
 {
   "name": "ydaa",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Yes, Don't Ask Again: after /ydaa on, this session's permission prompts are answered for you",
   "author": { "name": "Yudhi Armyndharis", "url": "https://github.com/rmyndharis" },
   "license": "MIT"
