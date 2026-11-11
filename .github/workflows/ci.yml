@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Mondays, against the newest Claude Code: the hooks-module API is in early access.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  # The release the README names as tested; the scheduled run takes the newest one.
+  CLAUDE_CODE_VERSION: ${{ github.event_name == 'schedule' && 'latest' || '2.1.322' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Install Claude Code
+        run: npm install --global "@anthropic-ai/claude-code@$CLAUDE_CODE_VERSION"
+      - name: Check the README names the tested release
+        if: github.event_name != 'schedule'
+        run: grep -q "tested with Claude Code $CLAUDE_CODE_VERSION\." README.md
+      - name: Check the changelog covers the current version
+        run: grep -q "^## \[$(jq -r .version .claude-plugin/plugin.json)\]" CHANGELOG.md
+      - run: claude plugin validate .
+      - run: claude plugin test .

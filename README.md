@@ -5,7 +5,8 @@
 <p align="center">A Claude Code plugin that answers permission prompts for you, the way you would have answered them yourself.</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.3.0-blue" alt="v0.3.0">
+  <a href="https://github.com/rmyndharis/ydaa/actions/workflows/ci.yml"><img src="https://github.com/rmyndharis/ydaa/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Frmyndharis%2Fydaa%2Fmain%2F.claude-plugin%2Fplugin.json&query=%24.version&prefix=v&label=version&color=blue" alt="Version"></a>
   <img src="https://img.shields.io/badge/Claude_Code-plugin-D97757?logo=claude&logoColor=white" alt="Claude Code plugin">
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero dependencies">
   <img src="https://img.shields.io/badge/license-MIT-111111" alt="MIT">
