@@ -1,8 +1,10 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-// Not permission prompts: Claude's own questions, and plan approval, which
-// answered unread would defeat plan mode.
+// Not permission prompts: Claude's own questions, and plan approval.
 const PERSON_ONLY = new Set(['AskUserQuestion', 'ExitPlanMode'])
+
+// Modes whose remaining prompts are escalations, plan blocks, or safety checks meant for a person.
+const PAUSED = new Set(['auto', 'plan', 'dontAsk', 'bypassPermissions'])
 
 // Roughly what a person spends reading one prompt and picking an answer.
 const SECONDS_PER_PROMPT = 2
@@ -30,8 +32,9 @@ async function stats($: EngineInterface): Promise<string> {
 // The host shows the line as "ydaa: <text>".
 function showStatus($: EngineInterface, isOn: boolean, mode: string | undefined): void {
   if (!isOn) return $.ui.status(undefined)
-  if (mode === undefined) return $.ui.status('on, except in auto mode')
-  $.ui.status(mode === 'auto' ? 'paused in auto mode (Shift+Tab for Manual)' : 'auto-answering permission prompts')
+  if (mode === undefined) return $.ui.status('on, except in auto or plan mode')
+  if (mode === 'auto') return $.ui.status('paused in auto mode (Shift+Tab for Manual)')
+  $.ui.status(PAUSED.has(mode) ? `paused in ${mode} mode` : 'auto-answering permission prompts')
 }
 
 // Switching modes raises no event of its own, so the status line follows the
@@ -86,7 +89,7 @@ export const register: Register = on => {
     } else if (arg !== '') return { text: 'Usage: /ydaa on|off|stats' }
     return {
       text: isOn
-        ? `ydaa is on for this session: permission prompts get "Yes, and don't ask again" when offered, otherwise "Yes", except in auto mode (Shift+Tab switches to Manual). /ydaa off hands them back.`
+        ? `ydaa is on for this session: permission prompts get "Yes, and don't ask again" when offered, otherwise "Yes", except in auto or plan mode (Shift+Tab switches modes). /ydaa off hands them back.`
         : 'ydaa is off: permission prompts come to you. Rules saved while it was on stay; review them with /permissions.',
     }
   })
@@ -95,9 +98,7 @@ export const register: Register = on => {
   // pending prompt are not run for it. Managed hooks still run above this one.
   on('classic.PermissionRequest', async ($, e, next) => {
     mode = follow($, isOn, mode, e.permission_mode)
-    // Auto mode prompts only for what it means you to decide, such as a call
-    // its classifier kept blocking.
-    if (!isOn || e.permission_mode === 'auto' || PERSON_ONLY.has(e.tool_name)) return next(e)
+    if (!isOn || PAUSED.has(e.permission_mode ?? mode ?? '') || PERSON_ONLY.has(e.tool_name)) return next(e)
     // "Yes, and don't ask again for ..." is the prompt's own rule and folder
     // grants; a mode switch ("switch to auto mode", "allow all edits") is not.
     const grants = (e.permission_suggestions ?? []).filter(

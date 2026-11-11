@@ -54,14 +54,17 @@ test('on: questions and plan approval stay with the person', async ($, on) => {
   }
 })
 
-test('on, in auto mode: its prompts stay with the person', async ($, on) => {
+test('on: pauses in auto, plan, dontAsk, and bypassPermissions; answers in Manual and acceptEdits', async ($, on) => {
   mock.store(on)
   on('classic.PermissionRequest', () => ({}))
   await ydaa($, 'on')
-  const ask: Ask = { ...bash([RULE]), permission_mode: 'auto' }
-  expect((await $.classic.PermissionRequest(ask)).decision).toBeUndefined()
-  const manual = await $.classic.PermissionRequest({ ...ask, permission_mode: 'default' })
-  expect(manual.decision).toEqual({ behavior: 'allow', updatedPermissions: [RULE] })
+  for (const permission_mode of ['auto', 'plan', 'dontAsk', 'bypassPermissions'] as const) {
+    expect((await $.classic.PermissionRequest({ ...bash([RULE]), permission_mode })).decision).toBeUndefined()
+  }
+  for (const permission_mode of ['default', 'acceptEdits'] as const) {
+    const res = await $.classic.PermissionRequest({ ...bash([RULE]), permission_mode })
+    expect(res.decision).toEqual({ behavior: 'allow', updatedPermissions: [RULE] })
+  }
 })
 
 test('the status line follows the mode the session reports', async ($, on) => {
@@ -75,9 +78,15 @@ test('the status line follows the mode the session reports', async ($, on) => {
   on('classic.PermissionRequest', () => ({}))
   // Before the first prompt nothing has told ydaa the mode.
   await ydaa($, 'on')
-  expect(status).toBe('on, except in auto mode')
+  expect(status).toBe('on, except in auto or plan mode')
   await $.classic.UserPromptSubmit({ prompt: 'go on', permission_mode: 'auto' })
   expect(status).toBe('paused in auto mode (Shift+Tab for Manual)')
+  // An event without permission_mode falls back to the last reported session mode.
+  expect((await $.classic.PermissionRequest(bash([RULE]))).decision).toBeUndefined()
+  await $.classic.UserPromptSubmit({ prompt: 'go on', permission_mode: 'plan' })
+  expect(status).toBe('paused in plan mode')
+  await $.classic.UserPromptSubmit({ prompt: 'go on', permission_mode: 'acceptEdits' })
+  expect(status).toBe('auto-answering permission prompts')
   await $.classic.UserPromptSubmit({ prompt: 'go on', permission_mode: 'default' })
   expect(status).toBe('auto-answering permission prompts')
   await $.classic.PermissionRequest({ ...bash([]), permission_mode: 'auto' })
@@ -115,7 +124,7 @@ for (const reason of ['clear', 'resume'] as const) {
     expect((await $.classic.PermissionRequest(bash([]))).decision).toBeUndefined()
     // The next session's mode is unknown until its first prompt.
     await ydaa($, 'on')
-    expect(status).toBe('on, except in auto mode')
+    expect(status).toBe('on, except in auto or plan mode')
   })
 }
 
