@@ -44,7 +44,7 @@ ydaa sits between being asked every time and not being asked at all. It clicks t
 
 ## Install
 
-ydaa needs a Claude Code release that supports function hooks in plugins. It is tested with Claude Code 2.1.319. The hooks-module API is in early access and can change between releases.
+ydaa needs a Claude Code release that supports function hooks in plugins. It is tested with Claude Code 2.1.322. The hooks-module API is in early access and can change between releases.
 
 In a Claude Code session:
 
